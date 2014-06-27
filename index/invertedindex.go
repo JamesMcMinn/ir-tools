@@ -8,7 +8,7 @@ import (
 
 type Doc interface {
 	Text() string
-	Tokens() map[string]int
+	TokenFrequency() map[string]int
 }
 
 type Inverted struct {
@@ -85,7 +85,7 @@ func (i *Inverted) StringsToGrams(t map[string]uint) *map[string]uint {
 }
 
 func (i *Inverted) AddDocument(t Doc) {
-	doc := t.Tokens()
+	doc := t.TokenFrequency()
 	for k, v := range doc {
 		i.NumTokens += uint64(v)
 		i.count[k] += uint64(v)
@@ -99,7 +99,7 @@ func (i *Inverted) AddDocument(t Doc) {
 
 // TODO: Update word count to reflect removed documents?
 func (i *Inverted) RemoveDocument(t Doc) {
-	for k, _ := range t.Tokens() {
+	for k, _ := range t.TokenFrequency() {
 		for e := i.index[k].Front(); e != nil; e = e.Next() {
 			if e.Value == t {
 				i.index[k].Remove(e)
