@@ -1,24 +1,31 @@
+// TweetTokenizer is a tokenizer designed explicitly for parsing Tweets and other
+// Twitter content.
 package parse
 
 import (
 	"io"
 	"log"
+	"regexp"
 )
 
 type TweetTokenzier struct {
 	text               string
 	position           int
 	currentTokenEntity bool
+	CharFilter         *regexp.Regexp
 }
 
 func NewTweetTokenizer(text string) (tokenizer *TweetTokenzier) {
-	tokenizer = &TweetTokenzier{text, 0, false}
+	var err error
+	reg, err = regexp.Compile("[^A-Za-z0-9]+")
+	if err != nil {
+		log.Fatal(err)
+	}
+	tokenizer = &TweetTokenzier{text, 0, false, reg}
 	return tokenizer
 }
 
 func (t *TweetTokenzier) Tokens() (tokens []string) {
-
-	log.Println(t.text)
 	for {
 		token, err := t.nextToken()
 		if err == io.EOF {
@@ -44,6 +51,12 @@ func (t *TweetTokenzier) nextToken() (token string, err error) {
 			break
 		}
 	}
+	if t.currentTokenEntity == false {
+		token = reg.ReplaceAllString(token, "")
+	}
+
+	t.currentTokenEntity = false
+
 	if token == "" && t.position >= len(t.text)-1 {
 		return token, io.EOF
 	}
@@ -55,11 +68,10 @@ func (t *TweetTokenzier) isDelimiter(pos int) bool {
 
 	switch c {
 	case ' ', '\t', '\n':
-		t.currentTokenEntity = false
 		return true
 
 	case ']', '[', '!', '"', '$', '%', '&', '(', ')', '*', '+', ',', '.', '/',
-		';', '<', '>', '=', '?', '\\', '\'', '^', '_', '{', '}', '|', '~', '-', '¬', '·':
+		';', '<', '>', '=', '?', '\\', '^', '_', '{', '}', '|', '~', '-', '¬', '·':
 		if t.currentTokenEntity == false {
 			return true
 		}
@@ -71,8 +83,12 @@ func (t *TweetTokenzier) isDelimiter(pos int) bool {
 			t.currentTokenEntity = true
 		}
 
-	case '#':
-
+	case '#', '@':
+		if t.currentTokenEntity == false && pos == t.position {
+			t.currentTokenEntity = true
+		} else {
+			return true
+		}
 	}
 
 	return false
