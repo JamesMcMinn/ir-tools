@@ -17,7 +17,7 @@ type TweetTokenzier struct {
 
 func NewTweetTokenizer(text string) (tokenizer *TweetTokenzier) {
 	var err error
-	reg, err = regexp.Compile("[^A-Za-z0-9]+")
+	reg, err := regexp.Compile("[^A-Za-z0-9]+")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,7 +52,7 @@ func (t *TweetTokenzier) nextToken() (token string, err error) {
 		}
 	}
 	if t.currentTokenEntity == false {
-		token = reg.ReplaceAllString(token, "")
+		token = t.CharFilter.ReplaceAllString(token, "")
 	}
 
 	t.currentTokenEntity = false
