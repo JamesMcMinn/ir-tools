@@ -1,6 +1,6 @@
 // LowercaseFilter is badly named - rather than filter out lowercase characters,
 // as the name would imply, it converts text to lowercase.
-package parse
+package filter
 
 import (
 	"strings"

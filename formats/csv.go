@@ -12,7 +12,7 @@ type CSVReader struct {
 }
 
 func ReadCSVFile(path string, separator rune) (reader *CSVReader, err error) {
-	file, err := os.Open("/home/james/Dropbox/Summerization/raw-data/wiki-tweets.txt")
+	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}

@@ -1,5 +1,5 @@
 // URL Filter removes URLs from the inpout tokens, and returns the remaining tokens
-package parse
+package filter
 
 import (
 	"strings"

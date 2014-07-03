@@ -1,4 +1,4 @@
-package parse
+package filter
 
 import (
 	"github.com/jamesmcminn/ir-tools"
