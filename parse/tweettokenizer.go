@@ -4,39 +4,60 @@ package parse
 
 import (
 	"io"
-	"log"
-	"regexp"
 )
 
 type TweetTokenzier struct {
 	text               string
 	position           int
 	currentTokenEntity bool
-	CharFilter         *regexp.Regexp
+	currentTokenURL    bool
+	tokens             []string
+	entities           []string
+	nonEntities        []string
 }
 
 func NewTweetTokenizer(text string) (tokenizer *TweetTokenzier) {
-	var err error
-	reg, err := regexp.Compile("[^A-Za-z0-9]+")
-	if err != nil {
-		log.Fatal(err)
-	}
-	tokenizer = &TweetTokenzier{text, 0, false, reg}
+	tokenizer = &TweetTokenzier{text, 0, false, false, []string{}, []string{}, []string{}}
 	return tokenizer
 }
 
 func (t *TweetTokenzier) Tokens() (tokens []string) {
-	for {
-		token, err := t.nextToken()
-		if err == io.EOF {
-			break
+	if len(t.tokens) == 0 {
+		for {
+			token, entity, err := t.nextToken()
+			if err == io.EOF {
+				break
+			}
+			t.tokens = append(t.tokens, token)
+			if entity {
+				t.entities = append(t.entities, token)
+			} else {
+				t.nonEntities = append(t.nonEntities, token)
+			}
 		}
-		tokens = append(tokens, token)
 	}
-	return tokens
+	return t.tokens
 }
 
-func (t *TweetTokenzier) nextToken() (token string, err error) {
+func (t *TweetTokenzier) Entities() (entities []string) {
+	t.Tokens() // for the side effects only
+
+	return t.entities
+}
+
+func (t *TweetTokenzier) NonEntities() (nonentities []string) {
+	t.Tokens() // side effects
+
+	return t.nonEntities
+}
+
+func (t *TweetTokenzier) AllTokenTypes() (allTokens []string, entities []string, nonEntities []string) {
+	return t.Tokens(), t.entities, t.nonEntities
+}
+
+func (t *TweetTokenzier) nextToken() (token string, entity bool, err error) {
+	t.currentTokenEntity = false
+	t.currentTokenURL = false
 	for i := t.position; i < len(t.text); i++ {
 		// no new token if the first char after the last delimiter is another delimiter
 		if delimiter := t.isDelimiter(i); delimiter && t.position == i {
@@ -51,16 +72,12 @@ func (t *TweetTokenzier) nextToken() (token string, err error) {
 			break
 		}
 	}
-	if t.currentTokenEntity == false {
-		token = t.CharFilter.ReplaceAllString(token, "")
-	}
-
-	t.currentTokenEntity = false
 
 	if token == "" && t.position >= len(t.text)-1 {
-		return token, io.EOF
+		return token, false, io.EOF
 	}
-	return token, nil
+
+	return token, t.currentTokenEntity, nil
 }
 
 func (t *TweetTokenzier) isDelimiter(pos int) bool {
@@ -72,15 +89,14 @@ func (t *TweetTokenzier) isDelimiter(pos int) bool {
 
 	case ']', '[', '!', '"', '$', '%', '&', '(', ')', '*', '+', ',', '.', '/',
 		';', '<', '>', '=', '?', '\\', '^', '_', '{', '}', '|', '~', '-', '¬', '·':
-		if t.currentTokenEntity == false {
-			return true
-		}
+		return t.currentTokenURL != true
 
 	case ':':
 		if t.currentTokenEntity == false && pos > 3 && t.text[pos-4:pos] != "http" {
 			return true
 		} else {
 			t.currentTokenEntity = true
+			t.currentTokenURL = true
 		}
 
 	case '#', '@':
