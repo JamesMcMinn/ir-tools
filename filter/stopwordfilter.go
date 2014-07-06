@@ -1,8 +1,8 @@
 package filter
 
 import (
-	"github.com/jamesmcminn/ir-tools"
 	"log"
+	"mirgit.dcs.gla.ac.uk/JamesMcMinn/ir-tools"
 )
 
 type StopWordFilter struct {
