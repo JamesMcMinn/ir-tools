@@ -3,6 +3,7 @@ package irtools
 import (
 	"bufio"
 	"os"
+	"strings"
 )
 
 // Take a list of terms and produce a frequency map for the list
@@ -37,4 +38,26 @@ func ReadLines(path string) ([]string, error) {
 		lines = append(lines, scanner.Text())
 	}
 	return lines, scanner.Err()
+}
+
+func URLFilter(text string) (clean string, urls []string) {
+	clean = text
+	for {
+		start := strings.Index(clean, "http://")
+		if start >= 0 {
+			end := strings.Index(clean[start:], " ")
+			if end == -1 {
+				urls = append(urls, clean[start:])
+				clean = clean[:start]
+				break
+			} else {
+				end += start + 1
+				urls = append(urls, clean[start:end])
+				clean = clean[:start] + clean[end:]
+			}
+		} else {
+			break
+		}
+	}
+	return clean, urls
 }

@@ -3,12 +3,11 @@ package index
 import (
 	"container/list"
 	"math"
-	"strings"
 )
 
 type Doc interface {
-	Text() string
-	TokenFrequency() map[string]int
+	GetText() string
+	TF() map[string]int
 }
 
 type Inverted struct {
@@ -29,34 +28,10 @@ func NewInvertedIndex() *Inverted {
 	return new(Inverted).Init()
 }
 
-func shouldRemove(c byte) bool {
-	switch {
-	case 'a' <= c && c <= 'z':
-		return false
-	case 'A' <= c && c <= 'Z':
-		return false
-	case '0' <= c && c <= '9':
-		return false
-	case c == ' ' || c == '&':
-		return false
-	}
-	return true
-}
-
-func clean(s string) string {
-	r := ""
-	for i := 0; i < len(s); i++ {
-		if shouldRemove(s[i]) == false {
-			r += string(s[i])
-		}
-	}
-	return strings.ToLower(strings.Trim(r, " "))
-}
-
-func (i *Inverted) GetDocs(gram string) []Doc {
+func (i *Inverted) GetDocs(term string) []Doc {
 	docs := []Doc{}
 
-	l := i.index[gram]
+	l := i.index[term]
 	if l == nil {
 		return nil
 	}
@@ -73,7 +48,12 @@ func (i *Inverted) TF(n string) uint64 {
 }
 
 func (i *Inverted) IDF(n string) float64 {
-	return math.Log(float64(i.NumDocuments) / float64(i.count[n]+1))
+	docs := i.index[n]
+	l := 0
+	if docs != nil {
+		l = docs.Len()
+	}
+	return math.Log2(float64(i.NumDocuments) / float64(l+1))
 }
 
 func (i *Inverted) StringsToGrams(t map[string]uint) *map[string]uint {
@@ -84,24 +64,24 @@ func (i *Inverted) StringsToGrams(t map[string]uint) *map[string]uint {
 	return &nt
 }
 
-func (i *Inverted) AddDocument(t Doc) {
-	doc := t.TokenFrequency()
+func (i *Inverted) AddDocument(d Doc) {
+	doc := d.TF()
 	for k, v := range doc {
 		i.NumTokens += uint64(v)
 		i.count[k] += uint64(v)
 		if _, ok := i.index[k]; ok == false {
 			i.index[k] = list.New()
 		}
-		i.index[k].PushBack(t)
+		i.index[k].PushBack(d)
 	}
 	i.NumDocuments++
 }
 
 // TODO: Update word count to reflect removed documents?
-func (i *Inverted) RemoveDocument(t Doc) {
-	for k, _ := range t.TokenFrequency() {
+func (i *Inverted) RemoveDocument(d Doc) {
+	for k, _ := range d.TF() {
 		for e := i.index[k].Front(); e != nil; e = e.Next() {
-			if e.Value == t {
+			if e.Value == d {
 				i.index[k].Remove(e)
 				if i.index[k].Len() == 0 {
 					delete(i.index, k)
