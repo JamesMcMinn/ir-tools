@@ -11,6 +11,7 @@ type SentenceTokenizer struct {
 	text     string
 	tokens   []string
 	position int
+	comma    bool
 }
 
 func NewSentenceTokenizer(text string) (tokenizer *SentenceTokenizer) {
@@ -19,8 +20,13 @@ func NewSentenceTokenizer(text string) (tokenizer *SentenceTokenizer) {
 		text:     text,
 		tokens:   []string{},
 		position: 0,
+		comma:    false,
 	}
 	return tokenizer
+}
+
+func (t *SentenceTokenizer) TokenizeOnComma(comma bool) {
+	t.comma = comma
 }
 
 func (t *SentenceTokenizer) Tokens() (tokens []string) {
@@ -74,14 +80,17 @@ func (t *SentenceTokenizer) isDelimiter(pos int) bool {
 	c := t.text[pos]
 
 	switch c {
-	case '!', ';', '?', '|', '·':
+	case '!', '?', '|', '·':
 		return true
 
-	case '-', '.':
-		return (pos+1) == len(t.text) || t.text[pos+1] == ' ' || t.isDelimiter(pos+1)
+	case '-', '~', '.':
+		return (pos+1) == len(t.text) || t.text[pos+1] == ' '
 
-	case ':':
-		return (pos+1) == len(t.text) || t.text[pos+1] != '/'
+	// case ':':
+	// 	return (pos+1) == len(t.text) || t.text[pos+1] != '/'
+
+	case ',':
+		return t.comma && ((pos+1) == len(t.text) || t.text[pos+1] == ' ')
 	}
 
 	return false

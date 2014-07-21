@@ -73,6 +73,26 @@ func (t *TweetTokenzier) nextToken() (token string, entity bool, err error) {
 		}
 	}
 
+	if token == "1" {
+		token = "ONE"
+	} else if token == "2" {
+		token = "TWO"
+	} else if token == "3" {
+		token = "THREE"
+	} else if token == "4" {
+		token = "FOUR"
+	} else if token == "5" {
+		token = "FIVE"
+	} else if token == "6" {
+		token = "SIX"
+	} else if token == "7" {
+		token = "SEVEN"
+	} else if token == "8" {
+		token = "EIGHT"
+	} else if token == "9" {
+		token = "NINE"
+	}
+
 	if token == "" && t.position >= len(t.text)-1 {
 		return token, false, io.EOF
 	}

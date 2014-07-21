@@ -53,7 +53,7 @@ func (i *Inverted) IDF(n string) float64 {
 	if docs != nil {
 		l = docs.Len()
 	}
-	return math.Log2(float64(i.NumDocuments) / float64(l+1))
+	return math.Log2(float64(i.NumDocuments+1) / float64(l+1))
 }
 
 func (i *Inverted) StringsToGrams(t map[string]uint) *map[string]uint {

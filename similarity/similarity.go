@@ -17,6 +17,10 @@ func Cosine(v1, v2 map[string]float64) float64 {
 		b2 += val2 * val2
 	}
 
+	if b1 == 0 || b2 == 0 {
+		return 0.0
+	}
+
 	return top / (math.Sqrt(b1) * math.Sqrt(b2))
 }
 
@@ -31,6 +35,10 @@ func IntCosine(v1, v2 map[string]int) float64 {
 
 	for _, val2 := range v2 {
 		b2 += float64(val2) * float64(val2)
+	}
+
+	if b1 == 0 || b2 == 0 {
+		return 0.0
 	}
 
 	return top / (math.Sqrt(b1) * math.Sqrt(b2))

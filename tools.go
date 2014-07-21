@@ -16,11 +16,21 @@ func Count(terms []string) (counted map[string]int) {
 }
 
 // Take two term frequency maps add the source map to the destination map
-func Combine(dest *map[string]int, source *map[string]int) {
+func Combine(dest, source *map[string]int) {
 	d := *dest
 	for k, v := range *source {
 		d[k] += v
 	}
+}
+
+// Counts the number of terms in m2 which are not in m1
+func Difference(m1, m2 map[string]int) (count int, difference []string) {
+	for k, _ := range m2 {
+		if _, ok := m1[k]; ok != true {
+			difference = append(difference, k)
+		}
+	}
+	return len(difference), difference
 }
 
 // readLines reads a whole file into memory
@@ -44,6 +54,9 @@ func URLFilter(text string) (clean string, urls []string) {
 	clean = text
 	for {
 		start := strings.Index(clean, "http://")
+		if start == -1 {
+			start = strings.Index(clean, "https://")
+		}
 		if start >= 0 {
 			end := strings.Index(clean[start:], " ")
 			if end == -1 {
