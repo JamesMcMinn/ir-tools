@@ -50,6 +50,8 @@ func ReadLines(path string) ([]string, error) {
 	return lines, scanner.Err()
 }
 
+// Removes URLs from a string, and returns the string along with
+// any removed URLs
 func URLFilter(text string) (clean string, urls []string) {
 	clean = text
 	for {
