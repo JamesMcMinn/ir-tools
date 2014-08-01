@@ -5,26 +5,31 @@ import (
 	"regexp"
 )
 
-var (
-	reg *regexp.Regexp
-)
-
 type AlphanumericTransform struct {
+	reg *regexp.Regexp
 }
 
-func NewAlphanumericTransform() *AlphanumericTransform {
+// Create a new Alphanumeric Transformer, which removes any non-alhpanumeric
+// chracters.
+func NewAlphanumericTransform(extra string) *AlphanumericTransform {
 	var err error
-	reg, err = regexp.Compile("[^A-Za-z0-9]+")
+	var reg *regexp.Regexp
+
+	reg, err = regexp.Compile("[^A-Za-z0-9" + extra + "]+")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return &AlphanumericTransform{}
+	return &AlphanumericTransform{reg: reg}
 }
 
-func (filter *AlphanumericTransform) Apply(input []string) (output []string) {
+func (filter *AlphanumericTransform) ApplyAll(input []string) (output []string) {
 	for i := range input {
-		output = append(output, reg.ReplaceAllString(input[i], ""))
+		output = append(output, filter.Apply(input[i]))
 	}
 	return output
+}
+
+func (filter *AlphanumericTransform) Apply(input string) (output string) {
+	return filter.reg.ReplaceAllString(input, "")
 }

@@ -13,9 +13,13 @@ func NewLowercaseTransform() *LowercaseTransform {
 	return &LowercaseTransform{}
 }
 
-func (filter *LowercaseTransform) Apply(input []string) (output []string) {
-	for i := range input {
-		output = append(output, strings.ToLower(input[i]))
+func (filter *LowercaseTransform) ApplyAll(input []string) (output []string) {
+	for _, v := range input {
+		output = append(output, filter.Apply(v))
 	}
 	return output
+}
+
+func (filter *LowercaseTransform) Apply(input string) (output string) {
+	return strings.ToLower(input)
 }

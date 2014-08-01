@@ -18,14 +18,14 @@ type Inverted struct {
 	NumTokens    uint64
 }
 
-func (i *Inverted) Init() *Inverted {
+func (i *Inverted) Reset() *Inverted {
 	i.index = make(map[string]*list.List)
 	i.count = make(map[string]uint64)
 	return i
 }
 
 func NewInvertedIndex() *Inverted {
-	return new(Inverted).Init()
+	return new(Inverted).Reset()
 }
 
 func (i *Inverted) GetDocs(term string) []Doc {
@@ -54,14 +54,6 @@ func (i *Inverted) IDF(n string) float64 {
 		l = docs.Len()
 	}
 	return math.Log2(float64(i.NumDocuments+1) / float64(l+1))
-}
-
-func (i *Inverted) StringsToGrams(t map[string]uint) *map[string]uint {
-	nt := make(map[string]uint)
-	for k, v := range t {
-		nt[k] = v
-	}
-	return &nt
 }
 
 func (i *Inverted) AddDocument(d Doc) {

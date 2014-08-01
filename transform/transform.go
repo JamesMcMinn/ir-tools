@@ -1,5 +1,6 @@
 package transform
 
-type transform interface {
-	Apply(input []string) (output []string)
+type Transform interface {
+	ApplyAll(input []string) (output []string)
+	Apply(input string) (output string)
 }
